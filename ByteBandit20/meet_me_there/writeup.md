@@ -139,9 +139,9 @@ p1 = c1.decrypt(p2.decode('hex'))
 print p1.decode('hex')
 ```
 
-Tags: aes, aes-ecb, crypto
+#### Tags: aes, aes-ecb, crypto
 
-Footnotes:
+#### Footnotes:
 ¹numbers observed running the following loop on an Intel i7-7820HQ @ 2.90GHz:
 ```python
 def solve(flag,key1,key2):
@@ -170,5 +170,4 @@ optimizations would cut that figure down substantially.
 
 ³https://en.wikipedia.org/wiki/Meet-in-the-middle_attack
 
-⁴ef92fab38516aa95fdc53c2eb7e8fe1d5e12288fdc9d026e30469f38ca87c305\
-ef92fab38516aa95fdc53c2eb7e8fe1d5e12288fdc9d026e30469f38ca87c305
+⁴ef92fab38516aa95fdc53c2eb7e8fe1d5e12288fdc9d026e30469f38ca87c305ef92fab38516aa95fdc53c2eb7e8fe1d5e12288fdc9d026e30469f38ca87c305
