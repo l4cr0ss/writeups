@@ -47,8 +47,8 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 As alluded to by the hint, the encryption is performed in a cascading
 fashion. First, the plaintext is encrypted with `key1` to produce an
-intermediate ciphertext. This intermediate ciphertext is then encrypted using
-`key2`, to produce the final ciphertext. 
+intermediate ciphertext. This intermediate ciphertext is then encrypted with
+`key2` to produce the final ciphertext. 
 
 ```python
 # source.py
