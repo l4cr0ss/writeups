@@ -62,14 +62,14 @@ print '\nEncrypted Flag:\n' + ct2.encode('hex') + '\n'
 
 Looking at the above, if we were to try and bruteforce the solution we would
 need to test (on average) fifty percent of the product of the keyspace of the
-two keys, key1 and key2, or 500,000,000,000 keys. If we assume that it takes
+two keys, `key1` and `key2`, or 500,000,000,000 keys. If we assume that it takes
 ~6s to check 1,000,000 keys¹, then we need about 34 days² to find the keys.
 Fortunately, there is a better way. 
 
 #### Solution:
 
-Consider this: the output of the encryption of the plaintext by key1 is
-exactly the output of the decryption of the final ciphertext by key2. In both
+Consider this: the output of the encryption of the plaintext by `key1` is
+exactly the output of the decryption of the final ciphertext by `key2`. In both
 cases, the result is the intermediate ciphertext. 
 
 Furthermore, we have at our disposal a known plaintext/ciphertext pair. We
