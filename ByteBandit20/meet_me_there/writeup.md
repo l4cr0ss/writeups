@@ -139,7 +139,8 @@ p1 = c1.decrypt(p2.decode('hex'))
 print p1.decode('hex')
 ```
 
-#### Tags: aes, aes-ecb, crypto
+#### Tags: 
+aes, aes-ecb, crypto, meet-in-the-middle, double-encryption, cascade-cipher
 
 #### Footnotes:
 ¹numbers observed running the following loop on an Intel i7-7820HQ @ 2.90GHz:
