@@ -4,7 +4,9 @@
 
 #### Concept:
 
-  Given a known plaintext/ciphertext pair and an encrypted string, find the unknown plaintext by breaking the encryption by performing a "meet-in-the-middle"³ attack. 
+  Given a known plaintext/ciphertext pair and an encrypted string, find the
+unknown plaintext by breaking the encryption using a "meet-in-the-middle"³
+attack. 
 
 #### Files:
 
@@ -18,11 +20,12 @@
 
 #### Hint:
 
-    - "Bob asked Alice to make the keys easier to guess, so to keep the data safe, she encrypted it twice"
+    - "Bob asked Alice to make the keys easier to guess, so to keep the data
+      safe, she encrypted it twice"
 
 #### Discussion:
 
-```
+```python
 # source.py:10,11
 key1 = '0'*13 + ''.join([random.choice(printable) for _ in range(3)])
 key2 = ''.join([random.choice(printable) for _ in range(3)]) + '0'*13
@@ -33,7 +36,7 @@ appending/prepending random selections from the set of printable characters.
 Given three free variables and 100 possible choices, we can calculate the 
 keyspace (of each key) to be 100^3, or 1,000,000 possibilities in size.
 
-```
+```python
 Python 2.7.17 (default, Nov  7 2019, 10:07:09) 
 [GCC 7.4.0] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
@@ -42,97 +45,99 @@ Type "help", "copyright", "credits" or "license" for more information.
 1000000
 ```
 
-  As alluded to by the hint, the encryption is performed in a cascading
-  fashion. First, the plaintext is encrypted with `key1` to produce an
-  intermediate ciphertext. This intermediate ciphertext is then encrypted using
-  `key2`, to produce the final ciphertext. 
+As alluded to by the hint, the encryption is performed in a cascading
+fashion. First, the plaintext is encrypted with `key1` to produce an
+intermediate ciphertext. This intermediate ciphertext is then encrypted using
+`key2`, to produce the final ciphertext. 
 
-  ```python
-  # source.py
-  with open("flag.txt") as f:
-      flag = f.read().strip()
-  # length of flag is a multiple of 16
-  ct1 = cipher1.encrypt(flag.encode('hex'))
-  ct2 = cipher2.encrypt(ct1.encode('hex'))
-  print '\nEncrypted Flag:\n' + ct2.encode('hex') + '\n'
-  ```
+```python
+# source.py
+with open("flag.txt") as f:
+    flag = f.read().strip()
+# length of flag is a multiple of 16
+ct1 = cipher1.encrypt(flag.encode('hex'))
+ct2 = cipher2.encrypt(ct1.encode('hex'))
+print '\nEncrypted Flag:\n' + ct2.encode('hex') + '\n'
+```
 
-  Looking at the above, if we were to try and bruteforce the solution we would
-  need to test (on average) fifty percent of the product of the keyspace of the
-  two keys, key1 and key2, or 500,000,000,000 keys. If we assume that it takes
-  ~6s to check 1,000,000 keys¹, then we need about 34 days² to find the keys.
-  Fortunately, there is a better way. 
+Looking at the above, if we were to try and bruteforce the solution we would
+need to test (on average) fifty percent of the product of the keyspace of the
+two keys, key1 and key2, or 500,000,000,000 keys. If we assume that it takes
+~6s to check 1,000,000 keys¹, then we need about 34 days² to find the keys.
+Fortunately, there is a better way. 
 
-Solution:
+#### Solution:
 
-  Consider this: the output of the encryption of the plaintext by key1 is
-  exactly the output of the decryption of the final ciphertext by key2. In both
-  cases, the result is the intermediate ciphertext. 
+Consider this: the output of the encryption of the plaintext by key1 is
+exactly the output of the decryption of the final ciphertext by key2. In both
+cases, the result is the intermediate ciphertext. 
 
-  Furthermore, we have at our disposal a known plaintext/ciphertext pair. We
-  know that the plaintext string `aaaaaaaaaaaaaaaa` encrypts to the ciphertext
-  string `ef92fab3...c305`⁴.
+Furthermore, we have at our disposal a known plaintext/ciphertext pair. We
+know that the plaintext string `aaaaaaaaaaaaaaaa` encrypts to the ciphertext
+string `ef92fab3...c305`⁴.
 
-  Armed with these two pieces of information we can execute a
-  "meet-in-the-middle"³ attack, which proceeds as follows:
+Armed with these two pieces of information we can execute a
+"meet-in-the-middle"³ attack, which proceeds as follows:
 
-  0. Create two lookup tables, L1 and L2
-  1. For each key in the keyspace of key1...
-    1.1. Encrypt the known plaintext by key
-    1.2. Store (result,key) as a key-value pair in L1
-  2. For each key in the keyspace of key2...
-    2.1. Decrypt the known ciphertext by key
-    2.1. Store (result,key) as a key-value pair in L2
+```
+0. Create two lookup tables, L1 and L2
+1. For each key in the keyspace of key1...
+  1.1. Encrypt the known plaintext by key
+  1.2. Store (result,key) as a key-value pair in L1
+2. For each key in the keyspace of key2...
+  2.1. Decrypt the known ciphertext by key
+  2.1. Store (result,key) as a key-value pair in L2
+```
 
-  Now, by taking the intersection of the keys of each table, we obtain the
-  intermediate ciphertext of our known plaintext/ciphertext pair. And, having
-  done so, we use it to index back into each of the lookup tables, recovering
-  the encryption keys and allowing us to decrypt the flag.
+Now, by taking the intersection of the keys of each table, we obtain the
+intermediate ciphertext of our known plaintext/ciphertext pair. And, having
+done so, we use it to index back into each of the lookup tables, recovering
+the encryption keys and allowing us to decrypt the flag.
 
-  ```python
-  #!/usr/bin/python2
-  import random
-  from Crypto.Cipher import AES
-  from os import urandom
-  from string import printable
+```python
+#!/usr/bin/python2
+import random
+from Crypto.Cipher import AES
+from os import urandom
+from string import printable
 
-  # known plaintext
-  kpt = 'aaaaaaaaaaaaaaaa'
-  kpt = kpt.encode('hex')
+# known plaintext
+kpt = 'aaaaaaaaaaaaaaaa'
+kpt = kpt.encode('hex')
 
-  # known ciphertext
-  kct = 'ef92fab38516aa95fdc53c2eb7e8fe1d5e12288fdc9d026e30469f38ca87c305\
-  ef92fab38516aa95fdc53c2eb7e8fe1d5e12288fdc9d026e30469f38ca87c305'
-  kct = kct.decode('hex')
+# known ciphertext
+kct = 'ef92fab38516aa95fdc53c2eb7e8fe1d5e12288fdc9d026e30469f38ca87c305\
+ef92fab38516aa95fdc53c2eb7e8fe1d5e12288fdc9d026e30469f38ca87c305'
+kct = kct.decode('hex')
 
-  # encrypted flag
-  flag = 'fa364f11360cef2550bd9426948af22919f8bdf4903ee561ba3d9b9c7daba4e7\
-  59268b5b5b4ea2589af3cf4abe6f9ae7e33c84e73a9c1630a25752ad2a984abf\
-  bbfaca24f7c0b4313e87e396f2bf5ae56ee99bb03c2ffdf67072e1dc98f9ef69\
-  1db700d73f85f57ebd84f5c1711a28d1a50787d6e1b5e726bc50db5a3694f576' 
+# encrypted flag
+flag = 'fa364f11360cef2550bd9426948af22919f8bdf4903ee561ba3d9b9c7daba4e7\
+59268b5b5b4ea2589af3cf4abe6f9ae7e33c84e73a9c1630a25752ad2a984abf\
+bbfaca24f7c0b4313e87e396f2bf5ae56ee99bb03c2ffdf67072e1dc98f9ef69\
+1db700d73f85f57ebd84f5c1711a28d1a50787d6e1b5e726bc50db5a3694f576' 
 
-  def keygen(n=1):
-      pad = '0'*13
-      template = pad + "{}" if n == 1 else "{}" + pad 
-      for i in printable:
-          for j in printable:
-              for k in printable:
-                  yield template.format(''.join([i,j,k]))
+def keygen(n=1):
+    pad = '0'*13
+    template = pad + "{}" if n == 1 else "{}" + pad 
+    for i in printable:
+        for j in printable:
+            for k in printable:
+                yield template.format(''.join([i,j,k]))
 
-  L1, L2 = ({},{})
-  ks1, ks2 = (keygen(1),keygen(2))
-  for k1,k2 in zip(ks1,ks2):
-      L1[AES.new(key=k1, mode=AES.MODE_ECB).encrypt(kpt).encode('hex')] = k1.encode('hex')
-      L2[AES.new(key=k2, mode=AES.MODE_ECB).decrypt(kct)] = k2.encode('hex')
+L1, L2 = ({},{})
+ks1, ks2 = (keygen(1),keygen(2))
+for k1,k2 in zip(ks1,ks2):
+    L1[AES.new(key=k1, mode=AES.MODE_ECB).encrypt(kpt).encode('hex')] = k1.encode('hex')
+    L2[AES.new(key=k2, mode=AES.MODE_ECB).decrypt(kct)] = k2.encode('hex')
 
-  ict = (L1.viewkeys() & L2.viewkeys()).pop()
-  k1, k2 = L1[ict].decode('hex'), L2[ict].decode('hex')
-  c1 = AES.new(key=k1, mode=AES.MODE_ECB)
-  c2 = AES.new(key=k2, mode=AES.MODE_ECB)
-  p2 = c2.decrypt(flag.decode('hex'))
-  p1 = c1.decrypt(p2.decode('hex'))
-  print p1.decode('hex')
-  ```
+ict = (L1.viewkeys() & L2.viewkeys()).pop()
+k1, k2 = L1[ict].decode('hex'), L2[ict].decode('hex')
+c1 = AES.new(key=k1, mode=AES.MODE_ECB)
+c2 = AES.new(key=k2, mode=AES.MODE_ECB)
+p2 = c2.decrypt(flag.decode('hex'))
+p1 = c1.decrypt(p2.decode('hex'))
+print p1.decode('hex')
+```
 
 Tags: aes, aes-ecb, crypto
 
